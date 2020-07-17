@@ -47,7 +47,7 @@ def createParser():
     parser.add_option('', '--MaxMomRatio',  dest='MaxMomRatio',  type=float, default=2.0, help='max. momentum ratio for particle inside of the cone and particle that defines the cone')
     parser.add_option('-l', '--local',  action='store_true', dest='LOCAL',  default=False, help='store output dir locally instead of at EOS CMG area, default is False.')
     parser.add_option('-y', '--dry-run', action='store_true', dest='DRYRUN', default=False, help='perform a dry run (no jobs are lauched).')
-    parser.add_option('-m', '--meyryn', action='store_true', dest='DRYRUN', default=False, help='limit jobs to the Meyryn site.')
+    parser.add_option('-m', '--meyrin', action='store_true', dest='MEYRIN', default=False, help='limit jobs to the Meyryn site.')
     parser.add_option('', '--eosArea', dest='eosArea', type='string', default='/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production', help='path to the eos area where the output jobs will be staged out')
     parser.add_option('-d', '--datTier', dest='DTIER',  type='string', default='GSD', help='data tier to run: "GSD" (GEN-SIM-DIGI) or "RECO", default is "GSD"')
     parser.add_option('-i', '--inDir',  dest='inDir',  type='string', default='',   help='name of the previous stage dir (relative to the local submission or "eosArea"), to be used as the input for next stage, not applicable for GEN stage')
@@ -487,8 +487,8 @@ def submitHGCalProduction(*args, **kwargs):
         write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
 
 
-        if(opt.MEYRYN):
-            write_condorjob.write('requirements = (DATACENTRE=?=/"meyrin/") \n')
+        if(opt.MEYRIN):
+            write_condorjob.write('requirements = (DATACENTRE=?="meyrin") \n')
 
         write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
         write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
