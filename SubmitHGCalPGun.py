@@ -488,7 +488,7 @@ def submitHGCalProduction(*args, **kwargs):
 
 
         if(opt.MEYRIN):
-            write_condorjob.write('requirements = (DATACENTRE=?="meyrin") \n')
+            write_condorjob.write('requirements = (TARGET.DATACENTRE=?="meyrin") \n')
 
         write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
         write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
