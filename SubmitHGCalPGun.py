@@ -484,7 +484,8 @@ def submitHGCalProduction(*args, **kwargs):
         write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
         write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
         write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
-        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
+        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
+#        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
 
 
         if(opt.MEYRIN):
@@ -497,7 +498,8 @@ def submitHGCalProduction(*args, **kwargs):
         write_condorjob.write('queue \n')
         write_condorjob.close()
 
-        cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
+        #cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
+        cmd = 'condor_submit ' +outDir+'/jobs/'+jobfile
 
         #TODO This could probably be better handled by a job array
         #Example: bsub -J "foo[1-3]" -oo "foo.%I.out" -eo "foo.%I.err" -q 8nm "sleep 1"
