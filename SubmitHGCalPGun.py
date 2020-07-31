@@ -251,8 +251,8 @@ def submitHGCalProduction(*args, **kwargs):
     tag = "_".join([opt.TAG, time.strftime("%Y%m%d")])
     if opt.outDir:
         outDir = opt.outDir
-    elif (opt.DTIER == 'GSD' or opt.DTIER == 'ALL' ):
-        outDir = "_".join([partGunType, tag]).replace(":", "_")
+    if (opt.DTIER == 'GSD' or opt.DTIER == 'ALL' ):
+        outDir = outDir + "/" + "_".join([partGunType, tag]).replace(":", "_")
         if (not os.path.isdir(outDir)):
             processCmd('mkdir -p '+outDir+'/cfg/')
             processCmd('mkdir -p '+outDir+'/std/')
