@@ -143,7 +143,7 @@ def processCmd(cmd, quite = 0):
     return output
 
 ### print the setup
-def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
+def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir, projDir):
     print '--------------------'
     print '[Run parameters]'
     print '--------------------'
@@ -165,7 +165,8 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir):
     if (opt.gunMode == 'closeby' and opt.DTIER=='GSD'):
         print '             z threshold in ['+str(opt.zMin)+','+str(opt.zMax)+'], r threshold in ['+str(opt.rMin)+','+str(opt.rMax)+'], pointing to (0,0,0) '+str(opt.pointing) + ', overlapping '+str(opt.overlapping)+ ', randomShoot '+str(opt.randomShoot) + ', nRandomPart '+str(opt.NRANDOMPART)
     print 'STORE AREA: ', [opt.eosArea, currentDir][int(opt.LOCAL)]
-    print 'OUTPUT DIR: ', outDir
+    print 'OUTPUT BASE DIR: ', outDir
+    print 'OUTPUT PROJ DIR: ', projDir
     print 'QUEUE:      ', opt.QUEUE
     print ['NUM. EVTS:   '+str(opt.NEVTS), ''][int(opt.DTIER!='GSD')]
     print '--------------------'
@@ -249,16 +250,24 @@ def submitHGCalProduction(*args, **kwargs):
 
     # prepare tag, prepare/check out dirs
     tag = "_".join([opt.TAG, time.strftime("%Y%m%d")])
+    # outDir is intended as the base path where the project submission directory will be placed
     if opt.outDir:
         outDir = opt.outDir
+    else:
+        outDir = currentDir
+
+    projectDir = "_".join([partGunType, tag]).replace(":", "_")
+    fullDir = ''
     if (opt.DTIER == 'GSD' or opt.DTIER == 'ALL' ):
-        outDir = outDir + "/" + "_".join([partGunType, tag]).replace(":", "_")
-        if (not os.path.isdir(outDir)):
-            processCmd('mkdir -p '+outDir+'/cfg/')
-            processCmd('mkdir -p '+outDir+'/std/')
-            processCmd('mkdir -p '+outDir+'/jobs/')
+        #outDir = outDir + "/" + "_".join([partGunType, tag]).replace(":", "_")
+        #outDir = outDir + "/" + projectDir
+        fullDir = outDir + "/" + projectDir
+        if (not os.path.isdir(fullDir)):
+            processCmd('mkdir -p '+fullDir+'/cfg/')
+            processCmd('mkdir -p '+fullDir+'/std/')
+            processCmd('mkdir -p '+fullDir+'/jobs/')
         else:
-            print 'Directory '+outDir+' already exists. Exiting...'
+            print 'Directory '+fullDir+' already exists. Exiting...'
             sys.exit()
     elif (opt.DTIER == 'RECO' or opt.DTIER == 'NTUP'):
         if not DASquery:
@@ -266,30 +275,31 @@ def submitHGCalProduction(*args, **kwargs):
             # This is e.g. useful for running different kinds of
             # reconstruction code on the same input file.
             if opt.TAG:
-                outDir = opt.inDir.strip("/") + "_" + opt.TAG
+                fullDir = opt.inDir.strip("/") + "_" + opt.TAG
             else:
-                outDir = opt.inDir
+                fullDir = opt.inDir
         else:
             # create an ouput directory based on relval name
-            outDir=opt.RELVAL.replace('/','_')
-        processCmd('mkdir -p '+outDir+'/cfg/')
-        processCmd('mkdir -p '+outDir+'/std/')
-        processCmd('mkdir -p '+outDir+'/jobs/')
+            fullDir=opt.RELVAL.replace('/','_')
+        processCmd('mkdir -p '+fullDir+'/cfg/')
+        processCmd('mkdir -p '+fullDir+'/std/')
+        processCmd('mkdir -p '+fullDir+'/jobs/')
 
   # prepare dir for GSD outputs locally or at EOS
     if (opt.LOCAL):
-        processCmd('mkdir -p '+outDir+'/'+opt.DTIER+'/')
+        processCmd('mkdir -p '+fullDir+'/'+opt.DTIER+'/')
         recoInputPrefix = 'file:'+currentDir+'/'+opt.inDir+'/'+previousDataTier+'/'
-        if (opt.DQM): processCmd('mkdir -p '+outDir+'/DQM/')
+        if (opt.DQM): processCmd('mkdir -p '+fullDir+'/DQM/')
     elif opt.eosArea:
         if opt.DTIER != 'ALL':
-            processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/'+opt.DTIER+'/');
+            processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+projectDir+'/'+opt.DTIER+'/');
         else:
-            processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/NTUP/');
+            processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+projectDir+'/NTUP/');
         recoInputPrefix = 'root://eoscms.cern.ch/'+opt.eosArea+'/'+opt.inDir+'/'+previousDataTier+'/'
-        if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+outDir+'/DQM/')
+        if (opt.DQM): processCmd(eosExec + ' mkdir -p '+opt.eosArea+'/'+projectDir+'/DQM/')
     # in case of relval always take reconInput from /store...
     if DASquery: recoInputPrefix=''
+    # GF GF Mon Aug  3 13:47:53 CEST 2020
 
     # determine number of jobs for GSD, in case of 'RECO'/'NTUP' only get the input GSD/RECO path
     if (opt.DTIER == 'GSD' or opt.DTIER == 'ALL'):
@@ -299,7 +309,7 @@ def submitHGCalProduction(*args, **kwargs):
         if DASquery: inPath=opt.RELVAL
 
     # print out some info
-    printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir)
+    printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir, projectDir)
 
     # submit all the jobs
     print '[Submitting jobs]'
@@ -366,7 +376,7 @@ def submitHGCalProduction(*args, **kwargs):
         if dtier == 'ALL':
             dtier = 'GSD'
         if DASquery:
-            basename=outDir+'_'+dtier+'_'+str(job)
+            basename=fullDir+'_'+dtier+'_'+str(job)
         else:
             basename = commonFileNamePrefix + processDetails+'_x' + str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD']) + cutsApplied + dtier + '_' + str(job)
 
@@ -461,7 +471,7 @@ def submitHGCalProduction(*args, **kwargs):
         # submit job
         # now write the file from the s_template
 
-        cfgfile_path = outDir + '/cfg/' + cfgfile
+        cfgfile_path = fullDir + '/cfg/' + cfgfile
         write_template= open(cfgfile_path, 'w')
         write_template.write(s_template)
         write_template.close()
@@ -472,34 +482,35 @@ def submitHGCalProduction(*args, **kwargs):
         if (opt.DTIER == 'ALL'):
 
             cfgfiler = cfgfile.replace('GSD','RECO')
-            cfgfiler_path = outDir + '/cfg/' + cfgfiler
+            cfgfiler_path = fullDir + '/cfg/' + cfgfiler
             write_template= open(cfgfiler_path, 'w')
             write_template.write(sr_template)
 
             cfgfilen = cfgfile.replace('GSD','NTUP')
-            cfgfilen_path = outDir + '/cfg/' + cfgfilen
+            cfgfilen_path = fullDir + '/cfg/' + cfgfilen
             write_template= open(cfgfilen_path, 'w')
             write_template.write(sn_template)
 
-        write_condorjob= open(outDir+'/jobs/'+jobfile, 'w')
+        write_condorjob= open(fullDir+'/jobs/'+jobfile, 'w')
         write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
         write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
-        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
+        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+outDir+' '+projectDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
+#        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
 #        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
 
 
         if(opt.MEYRIN):
             write_condorjob.write('requirements = (TARGET.DATACENTRE=?="meyrin") \n')
 
-        write_condorjob.write('output      = '+outDir+'/std/'+basename+'.out \n')
-        write_condorjob.write('error       = '+outDir+'/std/'+basename+'.err \n')
-        write_condorjob.write('log         = '+outDir+'/std/'+basename+'_htc.log \n\n')
+        write_condorjob.write('output      = '+fullDir+'/std/'+basename+'.out \n')
+        write_condorjob.write('error       = '+fullDir+'/std/'+basename+'.err \n')
+        write_condorjob.write('log         = '+fullDir+'/std/'+basename+'_htc.log \n\n')
         write_condorjob.write('max_retries = 1\n')
         write_condorjob.write('queue \n')
         write_condorjob.close()
 
         #cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
-        cmd = 'condor_submit ' +outDir+'/jobs/'+jobfile
+        cmd = 'condor_submit ' +fullDir+'/jobs/'+jobfile
 
         #TODO This could probably be better handled by a job array
         #Example: bsub -J "foo[1-3]" -oo "foo.%I.out" -eo "foo.%I.err" -q 8nm "sleep 1"
