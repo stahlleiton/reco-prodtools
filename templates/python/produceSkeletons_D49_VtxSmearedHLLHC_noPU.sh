@@ -38,7 +38,7 @@
 action() {
   # default arguments
   local inject_ticl="0"
-  local geometry="Extended2026D49"
+  local geometry="Extended2026D62"
   local custom="--customise Configuration/DataProcessing/Utils.addMonitoring"
   local tag=""
 
@@ -71,7 +71,7 @@ action() {
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
       --conditions auto:phase2_realistic_T15 \
       -n 100 \
-      --era Phase2C9 \
+      --era Phase2C11 \
       --eventcontent FEVTDEBUGHLT \
       -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
       --datatier GEN-SIM \
@@ -86,7 +86,7 @@ action() {
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T15 \
     -n -1 \
-    --era Phase2C9 \
+    --era Phase2C11 \
     --eventcontent FEVTDEBUGHLT,DQM \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
     --datatier GEN-SIM-RECO,DQMIO \
@@ -111,7 +111,7 @@ action() {
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T15 \
     -n -1 \
-    --era Phase2C9 \
+    --era Phase2C11 \
     --eventcontent FEVTDEBUGHLT \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM \
     --datatier GEN-SIM-RECO \
