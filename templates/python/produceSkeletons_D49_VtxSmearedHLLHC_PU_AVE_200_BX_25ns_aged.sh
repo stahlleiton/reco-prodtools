@@ -38,9 +38,9 @@
 action() {
   # default arguments
   local inject_ticl="0"
-  local geometry="Extended2026D49"
+  local geometry="Extended2026D62"
   #local pileup_input="das:/RelValMinBias_14TeV/CMSSW_11_1_0_pre7-110X_mcRun4_realistic_v3_2026D49noPU-v1/GEN-SIM"  # latest phas2 relval made by PdmV, as of June 16
-  local pileup_input="/eos/cms/store/cmst3/group/hgcal/CMG_studies/Production/minbias_D49_1120pre1_20200616/GSD"
+  local pileup_input="/eos/cms/store/group/dpg_hgcal/comm_hgcal/franzoni/minbias_D62_1120pre3IB_noPU_mb_eolupdate_20200805/GSD"
   local custom="--customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_3000,Configuration/DataProcessing/Utils.addMonitoring"
 
   # parse arguments
@@ -77,7 +77,7 @@ action() {
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
       --conditions auto:phase2_realistic_T15 \
       -n 100 \
-      --era Phase2C9 \
+      --era Phase2C11 \
       --eventcontent FEVTDEBUGHLT \
       -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
       --datatier GEN-SIM \
@@ -94,7 +94,7 @@ action() {
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T15 \
     -n -1 \
-    --era Phase2C9 \
+    --era Phase2C11 \
     --eventcontent FEVTDEBUGHLT,DQM \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
     --datatier GEN-SIM-RECO,DQMIO \
@@ -119,7 +119,7 @@ action() {
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T15 \
     -n -1 \
-    --era Phase2C9 \
+    --era Phase2C11 \
     --eventcontent FEVTDEBUGHLT \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM \
     --datatier GEN-SIM-RECO \
