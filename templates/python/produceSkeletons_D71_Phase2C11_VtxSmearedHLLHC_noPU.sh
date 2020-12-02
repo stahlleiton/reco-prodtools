@@ -38,10 +38,9 @@
 action() {
   # default arguments
   local inject_ticl="0"
-  local geometry="Extended2026D62"
-  #local pileup_input="das:/RelValMinBias_14TeV/CMSSW_11_1_0_pre7-110X_mcRun4_realistic_v3_2026D49noPU-v1/GEN-SIM"  # latest phas2 relval made by PdmV, as of June 16
-  local pileup_input="/eos/cms/store/group/dpg_hgcal/comm_hgcal/franzoni/minbias_D62_1120pre3IB_noPU_mb_eolupdate_20200805/GSD"
-  local custom="--customise SLHCUpgradeSimulations/Configuration/aging.customise_aging_3000,Configuration/DataProcessing/Utils.addMonitoring"
+  local geometry="Extended2026D71"
+  local custom="--customise Configuration/DataProcessing/Utils.addMonitoring"
+  local tag=""
 
   # parse arguments
   for arg in "$@"; do
@@ -68,11 +67,6 @@ action() {
     fi
   done
 
-  if [[ ${pileup_input} != *"das:"* ]]; then
-      echo "expanding local directory of input pileup to list all local files"
-      pileup_input=`find ${pileup_input} -iname "*.root" -printf "file:%h/%f,"`
-      pileup_input=${pileup_input::-1}
-  fi
 
   cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
       --conditions auto:phase2_realistic_T15 \
@@ -84,8 +78,6 @@ action() {
       --beamspot HLLHC14TeV \
       ${custom} \
       --geometry ${geometry} \
-      --pileup AVE_200_BX_25ns \
-      --pileup_input ${pileup_input} \
       --fileout GSD.root \
       --no_exec \
       --python_filename=GSD_fragment${tag}.py
