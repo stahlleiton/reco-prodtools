@@ -81,7 +81,6 @@ action() {
       --no_exec \
       --python_filename=GSD_fragment${tag}.py
   
-
   cmsDriver.py step3 \
     --conditions auto:phase2_realistic_T15 \
     -n -1 \

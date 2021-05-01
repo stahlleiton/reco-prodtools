@@ -312,8 +312,7 @@ def submitHGCalProduction(*args, **kwargs):
     printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir, projectDir)
 
     # submit all the jobs
-    print '[Submitting jobs]'
-    jobCount=0
+    print '[Creating jobs]'
 
     # read the template file in a single string
     f_template= open(opt.CONFIGFILE, 'r')
@@ -365,30 +364,43 @@ def submitHGCalProduction(*args, **kwargs):
             njobs=len(inputFilesList)
             nFilesPerJob = 1
 
+
+    # prepare the out file and cfg file by replacing DUMMY entries according to input options
+    
+    dtier = opt.DTIER
+    if dtier == 'ALL':
+        dtier = 'GSD'
+    if DASquery:
+        basename=fullDir+'_'+dtier+'_'+str(job)
+    else:
+        basename = commonFileNamePrefix + processDetails+'_x' + str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD']) + cutsApplied + dtier
+    
+    #start condor job
+    jobfile = basename +'.sub'
+    write_condorjob= open(fullDir+'/jobs/'+jobfile, 'w')
+    write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
+    write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
+    if(opt.MEYRIN):
+        write_condorjob.write('requirements = (TARGET.DATACENTRE=?="meyrin") \n')
+    write_condorjob.write('output      = '+fullDir+'/std/'+basename+'.out \n')
+    write_condorjob.write('error       = '+fullDir+'/std/'+basename+'.err \n')
+    write_condorjob.write('log         = '+fullDir+'/std/'+basename+'_htc.log \n\n')
+    write_condorjob.write('max_retries = 1\n')
+    
+    #loop over jobs
     for job in range(1,int(njobs)+1):
         submittxt = ' for particle ID(s) ' + opt.PARTID
         if DASquery : submittxt=' for RelVal:'+opt.RELVAL
-        print 'Submitting job ' + str(job) + ' out of ' + str(njobs) + submittxt
 
-        # prepare the out file and cfg file by replacing DUMMY entries according to input options
-
-        dtier = opt.DTIER
-        if dtier == 'ALL':
-            dtier = 'GSD'
-        if DASquery:
-            basename=fullDir+'_'+dtier+'_'+str(job)
-        else:
-            basename = commonFileNamePrefix + processDetails+'_x' + str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD']) + cutsApplied + dtier + '_' + str(job)
-
-        cfgfile = basename +'.py'
-        outfile = basename +'.root'
-        outdqmfile = basename.replace(dtier, 'DQM') +'.root'
-        jobfile = basename +'.sub'
+        cfgfile = '{}_{}.py'.format(basename,job)
+        outfile = '{}_{}.root'.format(basename,job)
+        outdqmfile = '{}_{}.root'.format(basename.replace(dtier, 'DQM'),job)
 
         s_template=template
 
         s_template=s_template.replace('DUMMYFILENAME',outfile)
         s_template=s_template.replace('DUMMYDQMFILENAME',outdqmfile)
+
         # avoid same seed for the same job number
         s_template=s_template.replace('DUMMYSEED',str(job+ (randint(0, 1000)*1000)) )
         if opt.TAG:
@@ -491,45 +503,28 @@ def submitHGCalProduction(*args, **kwargs):
             write_template= open(cfgfilen_path, 'w')
             write_template.write(sn_template)
 
-        write_condorjob= open(fullDir+'/jobs/'+jobfile, 'w')
-        write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
-        write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
-        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+outDir+' '+projectDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
-#        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
-#        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) '+currentDir+' '+outDir+' '+cfgfile+' '+cfgfiler+' '+cfgfilen+' '+str(opt.LOCAL)+' '+CMSSW_VERSION+' '+CMSSW_BASE+' '+SCRAM_ARCH+' '+opt.eosArea+' '+opt.DTIER+' '+str(opt.DQM)+'\n')
-
-
-        if(opt.MEYRIN):
-            write_condorjob.write('requirements = (TARGET.DATACENTRE=?="meyrin") \n')
-
-        write_condorjob.write('output      = '+fullDir+'/std/'+basename+'.out \n')
-        write_condorjob.write('error       = '+fullDir+'/std/'+basename+'.err \n')
-        write_condorjob.write('log         = '+fullDir+'/std/'+basename+'_htc.log \n\n')
-        write_condorjob.write('max_retries = 1\n')
-        write_condorjob.write('queue \n')
-        write_condorjob.close()
-
-        #cmd = 'condor_submit ' + currentDir+'/'+outDir+'/jobs/'+jobfile
-        cmd = 'condor_submit ' +fullDir+'/jobs/'+jobfile
-
-        #TODO This could probably be better handled by a job array
-        #Example: bsub -J "foo[1-3]" -oo "foo.%I.out" -eo "foo.%I.err" -q 8nm "sleep 1"
-        #This and more at https://www.ibm.com/support/knowledgecenter/SSETD4_9.1.3/lsf_command_ref/bsub.man_top.1.html
-
-        if(opt.DRYRUN):
-            print 'Dry-run: ['+cmd+']'
-        else:
-            output = processCmd(cmd)
-            while ('error' in output):
-                time.sleep(1.0);
-                output = processCmd(cmd)
-                if ('error' not in output):
-                    print 'Submitted after retry - job '+str(jobCount+1)
-
-        jobCount += 1
         created_cfgs.append(cfgfile_path)
 
-    print '[Submitted '+str(jobCount)+' jobs]'
+        #update condor file
+        job_args=(outDir,projectDir,cfgfile,cfgfiler,cfgfilen,str(opt.LOCAL),opt.eosArea,opt.DTIER,str(opt.DQM))
+        write_condorjob.write('arguments   = $(ClusterID) $(ProcId) {}\n'.format(' '.join( [a for a in job_args] ) ) )
+        write_condorjob.write('queue 1\n')
+
+    #finalize condor file and submit
+    write_condorjob.close()
+
+    cmd = 'condor_submit ' +fullDir+'/jobs/'+jobfile
+    print '[Submitting condor jobs]'
+    if(opt.DRYRUN):
+        print 'Dry-run: ['+cmd+']'
+    else:
+        output = processCmd(cmd)
+        while ('error' in output):
+            time.sleep(1.0);
+            output = processCmd(cmd)
+            if ('error' not in output):
+                print 'Submitted after retry'
+        print(output)
 
     return created_cfgs
 
