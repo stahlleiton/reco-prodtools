@@ -60,6 +60,9 @@ def createParser():
     parser.add_option('', '--multiClusterTag',  action='store', dest='MULTICLUSTAG', default="hgcalMultiClusters", help='name of HGCalMultiCluster InputTag - use hgcalLayerClusters before CMSSW_10_3_X')
     parser.add_option('', '--keepDQMfile',  action='store_true', dest='DQM',  default=False, help='store the DQM file in relevant folder locally or in EOS, default is False.')
 
+    parser.add_option('', '--pxFiringRate',  dest='pxFiringRate',  type=int, default=5., help='pxFiringRate for 4mm2')
+    parser.add_option('', '--sipmMap',  dest='sipmMap',  type='string', default='SimCalorimetry/HGCalSimProducers/data/sipmParams_geom-10.txt', help='radius of switch between 2 and 4 mm2')
+
     return parser
 
 
@@ -168,6 +171,8 @@ def printSetup(opt, CMSSW_BASE, CMSSW_VERSION, SCRAM_ARCH, currentDir, outDir, p
     print 'OUTPUT BASE DIR: ', outDir
     print 'OUTPUT PROJ DIR: ', projDir
     print 'QUEUE:      ', opt.QUEUE
+    print 'PIXFIRERAE:      ', opt.pxFiringRate
+    print 'SIPMAP:      ', opt.sipmMap
     print ['NUM. EVTS:   '+str(opt.NEVTS), ''][int(opt.DTIER!='GSD')]
     print '--------------------'
 
@@ -218,7 +223,6 @@ def submitHGCalProduction(*args, **kwargs):
     DASquery=False
     if opt.RELVAL != '':
         DASquery=True
-
 
     # in case of InCone generation of particles
     if opt.InConeID != '':
@@ -405,6 +409,21 @@ def submitHGCalProduction(*args, **kwargs):
         s_template=s_template.replace('DUMMYSEED',str(job+ (randint(0, 1000)*1000)) )
         if opt.TAG:
             s_template=s_template.replace('from reco_prodtools.templates.GSD_fragment import process','from reco_prodtools.templates.GSD_fragment_%s import process'%opt.TAG)
+
+# XXXXX GFGF
+#    parser.add_option('', '--pxFiringRate',  dest='pxFiringRate',  type=float, default=5, help='pxFiringRate for 4mm2')
+#    parser.add_option('', '--sipmMap',  dest='sipmMap',  type=float, default='SimCalorimetry/HGCalSimProducers/data/sipmParams_geom-10.txt', help='radius of switch between 2 and 4 mm2')
+
+#    SimCalorimetry/HGCalSimProducers/data/sipmParams_geom-10.txt
+
+#    if opt.pxFiringRate != '':
+#        process.mix.digitizers.hgchebackDigitizer.digiCfg.pxFiringRate
+
+
+        if opt.pxFiringRate != 0:
+            s_template=s_template.replace('DUMMYPXFIRINGRATE', str(opt.pxFiringRate))
+        if opt.sipmMap != '':
+            s_template=s_template.replace('DUMMYSIPMAP', "'"+opt.sipmMap+"'")
 
         if (opt.DTIER == 'GSD' or opt.DTIER == 'ALL' ):
             # in case of InCone generation of particles
