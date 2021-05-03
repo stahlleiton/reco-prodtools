@@ -39,14 +39,16 @@ if [ ${localFlag} == "True" ]
         then
         cp *DQM*.root ${curDir}/${outDir}/DQM/
     fi
-  else
+else
     a=`ls *.root`
     echo "Will copy ${a} to output directory in EOS root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/"
     xrdcp -N -v ${a} root://eoscms.cern.ch/${eosArea}/${outDir}/${dataTier}/Events_${clusterid}_${procid}.root
+    rm ${a}
     if [ ${keepDQMfile} == "True" ]
         then
 	echo "Will copy DQM-like ${a} to output directory in EOS"
         xrdcp -N -v *DQM*.root root://eoscms.cern.ch/${eosArea}/${outDir}/DQM/
+        rm *DQM*.root
     fi
-    echo "Will copy DQM-like ${a} to output directory in EOS"
+    echo "Will copy DQM-like ${a} to output directory in EOS"  
 fi
