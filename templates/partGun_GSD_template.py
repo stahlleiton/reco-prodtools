@@ -107,3 +107,8 @@ elif gunmode == 'physproc':
         filterPath = defineJetBasedBias(process, jetColl=jetColl, thr=thr, minObj=minObj)
         process.schedule.extend([filterPath])
         process.FEVTDEBUGHLToutput.SelectEvents.SelectEvents=cms.vstring(filterPath.label())
+
+# enable customisation of CE-H noise and sipm type
+process.mix.digitizers.hgchebackDigitizer.digiCfg.pxFiringRate  = cms.untracked.uint32(DUMMYPXFIRINGRATE)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.sipmMap       = cms.string(DUMMYSIPMAP)
+
