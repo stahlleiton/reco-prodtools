@@ -408,8 +408,9 @@ def submitHGCalProduction(*args, **kwargs):
 
         # avoid same seed for the same job number
         s_template=s_template.replace('DUMMYSEED',str(job+ (randint(0, 1000)*1000)) )
-        if opt.CFGTAG:
-            s_template=s_template.replace('from reco_prodtools.templates.GSD_fragment import process','from reco_prodtools.templates.GSD_fragment_%s import process'%opt.CFGTAG)
+        if not opt.CFGTAG is None:
+            s_template=s_template.replace('from reco_prodtools.templates.GSD_fragment import process',
+                                          'from reco_prodtools.templates.GSD_fragment_%s import process'%opt.CFGTAG)
 
 # XXXXX GFGF
 #    parser.add_option('', '--pxFiringRate',  dest='pxFiringRate',  type=float, default=5, help='pxFiringRate for 4mm2')
