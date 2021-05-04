@@ -19,6 +19,7 @@ def createParser():
 
     # input options
     parser.add_option('-t', '--tag',    dest='TAG',    type='string',  default='', help='tag to be appended to the resulting output dir, default is an empty string')
+    parser.add_option(      '--cfgTag', dest='CFGTAG',    type='string',  default=None, help='tag to be appended to the default cfg file default is an empty string')
     parser.add_option('-q', '--queue',  dest='QUEUE',  type='string',  default='tomorrow', help='queue to be used with HTCondor, default is tomorrow')
     parser.add_option('-n', '--nevts',  dest='NEVTS',  type=int,       default=100,  help='total number of events, applicable to runs with GEN stage, default is 100')
     parser.add_option('-e', '--evtsperjob', dest='EVTSPERJOB', type=int, default=-1,   help='number of events per job, if set to -1 it will set to a recommended value (GSD: 4events/1nh, RECO:8events/1nh), default is -1')
@@ -407,8 +408,8 @@ def submitHGCalProduction(*args, **kwargs):
 
         # avoid same seed for the same job number
         s_template=s_template.replace('DUMMYSEED',str(job+ (randint(0, 1000)*1000)) )
-        if opt.TAG:
-            s_template=s_template.replace('from reco_prodtools.templates.GSD_fragment import process','from reco_prodtools.templates.GSD_fragment_%s import process'%opt.TAG)
+        if opt.CFGTAG:
+            s_template=s_template.replace('from reco_prodtools.templates.GSD_fragment import process','from reco_prodtools.templates.GSD_fragment_%s import process'%opt.CFGTAG)
 
 # XXXXX GFGF
 #    parser.add_option('', '--pxFiringRate',  dest='pxFiringRate',  type=float, default=5, help='pxFiringRate for 4mm2')
