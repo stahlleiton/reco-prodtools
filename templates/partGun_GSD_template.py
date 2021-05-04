@@ -109,6 +109,5 @@ elif gunmode == 'physproc':
         process.FEVTDEBUGHLToutput.SelectEvents.SelectEvents=cms.vstring(filterPath.label())
 
 # enable customisation of CE-H noise and sipm type
-process.mix.digitizers.hgchebackDigitizer.digiCfg.pxFiringRate  = cms.double(DUMMYPXFIRINGRATE)
-process.mix.digitizers.hgchebackDigitizer.digiCfg.sipmMap       = cms.string(DUMMYSIPMAP)
-
+process.HGCAL_noise_heback.pxFiringRate  = cms.double(DUMMYPXFIRINGRATE)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.sipmMap = cms.string(DUMMYSIPMAP)
