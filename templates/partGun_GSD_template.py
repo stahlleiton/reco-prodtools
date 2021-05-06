@@ -114,3 +114,5 @@ process.mix.digitizers.hgchebackDigitizer.digiCfg.sipmMap = cms.string(DUMMYSIPM
 
 process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByTileArea= cms.bool(True)
 process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleBySipmArea= cms.bool(True)
+
+process.mix.digitizers.hgchebackDigitizer.digiCfg.nPEperMIP= cms.double( 35/2. )
