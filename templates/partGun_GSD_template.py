@@ -111,3 +111,8 @@ elif gunmode == 'physproc':
 # enable customisation of CE-H noise and sipm type
 process.HGCAL_noise_heback.pxFiringRate  = cms.double(DUMMYPXFIRINGRATE)
 process.mix.digitizers.hgchebackDigitizer.digiCfg.sipmMap = cms.string(DUMMYSIPMAP)
+
+process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleByTileArea= cms.bool(True)
+process.mix.digitizers.hgchebackDigitizer.digiCfg.scaleBySipmArea= cms.bool(True)
+
+process.mix.digitizers.hgchebackDigitizer.digiCfg.nPEperMIP= cms.double( 35/2. )
