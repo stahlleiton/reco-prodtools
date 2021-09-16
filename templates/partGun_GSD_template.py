@@ -92,7 +92,7 @@ elif gunmode == 'physproc':
     from reco_prodtools.templates.hgcBiasedGenProcesses_cfi import *
 
     #define the process
-    print 'Setting process to', proc
+    print('Setting process to', proc)
     defineProcessGenerator(process, proc=proc, ptMin=ptMin, ptMax=ptMax)
 
     #set a filter path if it's available
@@ -100,10 +100,10 @@ elif gunmode == 'physproc':
         jetColl = proc_cfg[1]
         thr = float(proc_cfg[2])
         minObj = int(proc_cfg[3])
-        print 'Adding a filter with the following settings:'
-        print '\tgen-jet collection for filtering:', jetColl
-        print '\tpT threshold [GeV]:', thr
-        print '\tmin. number of jets with the above threshold:', minObj
+        print('Adding a filter with the following settings:')
+        print('\tgen-jet collection for filtering:', jetColl)
+        print('\tpT threshold [GeV]:', thr)
+        print('\tmin. number of jets with the above threshold:', minObj)
         filterPath = defineJetBasedBias(process, jetColl=jetColl, thr=thr, minObj=minObj)
         process.schedule.extend([filterPath])
         process.FEVTDEBUGHLToutput.SelectEvents.SelectEvents=cms.vstring(filterPath.label())
