@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# intended for developments in CMSSW_11_2_0 cycle
+# intended for developments in CMSSW_12_1_x cycle
 
 
 # This is the shell script that will generate all the skeletons using cmsDriver commands.
 # The commands included have been taken from runTheMatrix with the following command:
 #
-# runTheMatrix.py -w upgrade -l 20634.0 --command="--no_exec" --dryRun
+# runTheMatrix.py -w upgrade -l 38634 --command="--no_exec" --dryRun
 #
 # The reconstruction as part of the ticl framework is injected into the RECO_fragment.
 #
@@ -38,7 +38,7 @@
 action() {
   # default arguments
   local inject_ticl="0"
-  local geometry="Extended2026D71"
+  local geometry="Extended2026D86"
   local custom="--customise Configuration/DataProcessing/Utils.addMonitoring"
   local tag=""
 
@@ -67,26 +67,21 @@ action() {
     fi
   done
 
-
-  cmsDriver.py TTbar_14TeV_TuneCUETP8M1_cfi \
-      --conditions auto:phase2_realistic_T15 \
-      -n 100 \
-      --era Phase2C11 \
-      --eventcontent FEVTDEBUGHLT \
-      -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
-      --datatier GEN-SIM \
-      --beamspot HLLHC14TeV \
+  cmsDriver.py TTbar_14TeV_TuneCP5_cfi  \
+      -s GEN,SIM -n 100 \
+      --conditions auto:phase2_realistic_T21 \
+      --beamspot HLLHC14TeV --datatier GEN-SIM \
+      --eventcontent FEVTDEBUGHLT --geometry ${geometry} \
+      --era Phase2C11I13M9 \
       ${custom} \
-      --geometry ${geometry} \
       --fileout GSD.root \
       --no_exec \
       --python_filename=GSD_fragment${tag}.py
-  
 
-  cmsDriver.py step3 \
-    --conditions auto:phase2_realistic_T15 \
+  cmsDriver.py step2 \
+    --conditions auto:phase2_realistic_T21 \
     -n -1 \
-    --era Phase2C11 \
+    --era Phase2C11I13M9 \
     --eventcontent FEVTDEBUGHLT,DQM \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
     --datatier GEN-SIM-RECO,DQMIO \
@@ -109,9 +104,9 @@ action() {
 
 
   cmsDriver.py step3 \
-    --conditions auto:phase2_realistic_T15 \
+    --conditions auto:phase2_realistic_T21 \
     -n -1 \
-    --era Phase2C11 \
+    --era Phase2C11I13M9 \
     --eventcontent FEVTDEBUGHLT \
     -s RAW2DIGI,L1Reco,RECO,RECOSIM \
     --datatier GEN-SIM-RECO \
