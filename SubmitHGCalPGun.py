@@ -280,7 +280,8 @@ def submitHGCalProduction(*args, **kwargs):
             # This is e.g. useful for running different kinds of
             # reconstruction code on the same input file.
             if opt.TAG:
-                fullDir = opt.inDir.strip("/") + "_" + opt.TAG
+                fullDir = opt.inDir
+                #fullDir = opt.inDir.strip("/") + "_" + opt.TAG
             else:
                 fullDir = opt.inDir
         else:
@@ -358,11 +359,12 @@ def submitHGCalProduction(*args, **kwargs):
         commonFileNamePrefix = inputFilesList[0].split("_", 1)[0]
         # build regular expression for splitting (NOTE: none of this is used for relval!)
         if not DASquery:
-            regex = re.compile(ur"{prefix}(_\S*)_x([0-9]*)(_\S*){tier}_([0-9]*).root".format(prefix=commonFileNamePrefix, tier=previousDataTier))
+            #regex = re.compile(ur"{prefix}(_\S*)_x([0-9]*)(_\S*){tier}_([0-9]*).root".format(prefix=commonFileNamePrefix, tier=previousDataTier))
+            regex = re.compile(ur"{prefix}_([0-9]*)_([0-9]*).root".format(prefix=commonFileNamePrefix))
             matches = regex.match(inputFilesList[0])
-            processDetails = matches.group(1)
-            eventsPerPrevJob = int(matches.group(2))
-            cutsApplied = matches.group(3)  # includes leading and trailing underscore if applicable
+            processDetails = ""#matches.group(1)
+            eventsPerPrevJob = int(matches.group(1))#int(matches.group(2))
+            cutsApplied = ""#matches.group(3)  # includes leading and trailing underscore if applicable
             nFilesPerJob = max(int(math.floor(float(min(opt.EVTSPERJOB, len(inputFilesList)*eventsPerPrevJob))/float(eventsPerPrevJob))),1)
             njobs = int(math.ceil(float(len(inputFilesList))/float(nFilesPerJob)))
         else:
@@ -371,7 +373,7 @@ def submitHGCalProduction(*args, **kwargs):
 
 
     # prepare the out file and cfg file by replacing DUMMY entries according to input options
-    
+
     dtier = opt.DTIER
     if dtier == 'ALL':
         dtier = 'GSD'
@@ -379,11 +381,12 @@ def submitHGCalProduction(*args, **kwargs):
         basename=fullDir+'_'+dtier+'_'+str(job)
     else:
         basename = commonFileNamePrefix + processDetails+'_x' + str([nFilesPerJob * eventsPerPrevJob, opt.EVTSPERJOB][opt.DTIER=='GSD']) + cutsApplied + dtier
-    
+
     #start condor job
     jobfile = basename +'.sub'
     write_condorjob= open(fullDir+'/jobs/'+jobfile, 'w')
     write_condorjob.write('+JobFlavour = "'+opt.QUEUE+'" \n\n')
+    write_condorjob.write('+AccountingGroup = "group_u_CMST3.all" \n\n')
     write_condorjob.write('executable  = '+currentDir+'/SubmitFileGSD.sh \n')
     if(opt.MEYRIN):
         write_condorjob.write('requirements = (TARGET.DATACENTRE=?="meyrin") \n')
@@ -391,7 +394,7 @@ def submitHGCalProduction(*args, **kwargs):
     write_condorjob.write('error       = '+fullDir+'/std/'+basename+'.err \n')
     write_condorjob.write('log         = '+fullDir+'/std/'+basename+'_htc.log \n\n')
     write_condorjob.write('max_retries = 1\n')
-    
+
     #loop over jobs
     for job in range(1,int(njobs)+1):
         submittxt = ' for particle ID(s) ' + opt.PARTID
@@ -411,6 +414,8 @@ def submitHGCalProduction(*args, **kwargs):
         if not opt.CFGTAG is None:
             s_template=s_template.replace('from reco_prodtools.templates.GSD_fragment import process',
                                           'from reco_prodtools.templates.GSD_fragment_%s import process'%opt.CFGTAG)
+            s_template=s_template.replace('from reco_prodtools.templates.RECO_fragment import process',
+                                          'from reco_prodtools.templates.RECO_fragment_%s import process'%opt.CFGTAG)
 
 # XXXXX GFGF
 #    parser.add_option('', '--pxFiringRate',  dest='pxFiringRate',  type=float, default=5, help='pxFiringRate for 4mm2')

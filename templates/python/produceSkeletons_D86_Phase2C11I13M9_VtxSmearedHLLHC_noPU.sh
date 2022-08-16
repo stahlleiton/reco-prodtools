@@ -68,12 +68,15 @@ action() {
   done
 
   cmsDriver.py TTbar_14TeV_TuneCP5_cfi  \
-      -s GEN,SIM -n 100 \
       --conditions auto:phase2_realistic_T21 \
-      --beamspot HLLHC14TeV --datatier GEN-SIM \
-      --eventcontent FEVTDEBUGHLT --geometry ${geometry} \
+      -n 100 \
       --era Phase2C11I13M9 \
+      --eventcontent FEVTDEBUGHLT \
+      -s GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,HLT:@fake2 \
+      --datatier GEN-SIM \
+      --beamspot HLLHC14TeV \
       ${custom} \
+      --geometry ${geometry} \
       --fileout GSD.root \
       --no_exec \
       --python_filename=GSD_fragment${tag}.py
@@ -82,9 +85,9 @@ action() {
     --conditions auto:phase2_realistic_T21 \
     -n -1 \
     --era Phase2C11I13M9 \
-    --eventcontent FEVTDEBUGHLT,DQM \
-    -s RAW2DIGI,L1Reco,RECO,RECOSIM,VALIDATION:@phase2Validation,DQM:@phase2 \
-    --datatier GEN-SIM-RECO,DQMIO \
+    --eventcontent FEVTDEBUGHLT \
+    -s RAW2DIGI,L1Reco,RECO,RECOSIM \
+    --datatier GEN-SIM-RECO \
     --geometry ${geometry} \
     --fileout RECO.root \
     --no_exec \
